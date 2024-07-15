@@ -6,7 +6,7 @@
 #    By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/11/03 14:28:02 by vanitas           #+#    #+#              #
-#    Updated: 2024/07/14 18:09:37 by bvaujour         ###   ########.fr        #
+#    Updated: 2024/07/15 15:54:07 by bvaujour         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,7 +27,8 @@ MLX_FILE	=	SuperMinilibX.a mlx_linux/libmlx_Linux.a
 
 LIBFT_LIB	=	$(addprefix $(LIBFT_PATH), $(LIBFT_FILE))
 
-MLX_FLAG	=	-lX11 -lXext
+MLX_FLAG	=	-lX11 -lXext 
+# -lSDL2 -lSDL2_mixer
 
 MLX_PATH	=	./SuperMinilibX/
 

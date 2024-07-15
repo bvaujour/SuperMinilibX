@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/11 15:01:35 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/15 03:31:14 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/15 11:11:37 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ void	quit(t_data *data)
 		mlx_destroy_image(data->engine.mlx_ptr, data->img_db.tile_HautG.img_ptr);
 	if (data->img_db.tile_Milieu.img_ptr)
 		mlx_destroy_image(data->engine.mlx_ptr, data->img_db.tile_Milieu.img_ptr);
+	if (data->img_db.waves_fix.img_ptr)
+		mlx_destroy_image(data->engine.mlx_ptr, data->img_db.waves_fix.img_ptr);
 	mlx_do_key_autorepeaton(data->engine.mlx_ptr);
 	if (data->engine.mlx_win)
 		mlx_destroy_window(data->engine.mlx_ptr, data->engine.mlx_win);
@@ -65,7 +67,7 @@ void	quit(t_data *data)
 		mlx_destroy_display(data->engine.mlx_ptr);
 
 	free(data->engine.mlx_ptr);
-	free(data->world.waves);
+	free(data->world.animated_tiles);
 	free(data->img_db.hero_idle.img);
 	free(data->img_db.waves.img);
 	free(data->img_db.hero_jump.img);

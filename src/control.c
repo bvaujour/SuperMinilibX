@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/11 15:02:54 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/15 02:24:35 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/15 15:54:25 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,6 +99,7 @@ int	button_press(int button, int x, int y, t_data *data)
 	if (button == 1)
 	{
 		data->hero.is_attacking = true;
+		// playSoundInThread("SWSH_Whoosh 4 (ID 1796)_LS.wav");
 		character_change_state(&data->hero, data->hero.locomotion.state);
 	}
 	printf("button = %d\n", button);

@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/12 00:39:36 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/15 00:26:07 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/15 12:17:01 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,22 +71,22 @@ static void	build_map(t_data *data)
 		while (data->world.map[i][j])
 		{
 			if (data->world.map[i][j] == '2')
-				ft_draw_img_to_img(&data->img_db.background, &data->img_db.tile_Bas, j * data->img_db.tile_Bas.width, i * data->img_db.tile_Bas.height);
+				ft_draw_img_to_img(&data->img_db.background, &data->img_db.tile_Bas, j * data->world.tile_w, i * data->world.tile_h);
 			else if (data->world.map[i][j] == '5')
-				ft_draw_img_to_img(&data->img_db.background, &data->img_db.tile_Milieu, j * data->img_db.tile_Milieu.width, i * data->img_db.tile_Milieu.height);
+				ft_draw_img_to_img(&data->img_db.background, &data->img_db.tile_Milieu, j * data->world.tile_w, i * data->world.tile_h);
 			else if (data->world.map[i][j] == '7')
-				ft_draw_img_to_img(&data->img_db.background, &data->img_db.tile_HautG, j * data->img_db.tile_HautD.width, i * data->img_db.tile_HautD.height);
+				ft_draw_img_to_img(&data->img_db.background, &data->img_db.tile_HautG, j * data->world.tile_w, i * data->world.tile_h);
 			else if (data->world.map[i][j] == '8')
-				ft_draw_img_to_img(&data->img_db.background, &data->img_db.tile_Haut, j * data->img_db.tile_HautG.width, i * data->img_db.tile_HautG.height);
+				ft_draw_img_to_img(&data->img_db.background, &data->img_db.tile_Haut, j * data->world.tile_w, i * data->world.tile_h);
 			else if (data->world.map[i][j] == '9')
-				ft_draw_img_to_img(&data->img_db.background, &data->img_db.tile_HautD, j * data->img_db.tile_Haut.width, i * data->img_db.tile_Haut.height);
+				ft_draw_img_to_img(&data->img_db.background, &data->img_db.tile_HautD, j * data->world.tile_w, i * data->world.tile_h);
 			else if (data->world.map[i][j] == 'W')
 				count++;
 			j++;
 		}
 		i++;
 	}
-	data->world.waves = malloc(sizeof(t_animate_tile) * (count + 1));
+	data->world.animated_tiles = malloc(sizeof(t_animate_tile) * (count + 1));
 	count = 0;
 	i = 0;
 	while (data->world.map[i])
@@ -96,17 +96,18 @@ static void	build_map(t_data *data)
 		{
 			if (data->world.map[i][j] == 'W')
 			{
-				init_draw(&data->world.waves[count].draw, &data->img_db.waves, (t_coor){j * data->img_db.waves.img->width, i * data->img_db.waves.img->height});
-				data->world.waves[count].end = false;
-				data->world.waves[count].pos.x = j * data->img_db.waves.img->width;
-				data->world.waves[count].pos.y = i * data->img_db.waves.img->height;
+				init_draw(&data->world.animated_tiles[count].draw, &data->img_db.waves, (t_coor){j * data->world.tile_w, i * data->world.tile_h}, "waves");
+				data->world.animated_tiles[count].end = false;
+				data->world.animated_tiles[count].pos.x = j * data->world.tile_w;
+				data->world.animated_tiles[count].pos.y = i * data->world.tile_h;
+				ft_draw_img_to_img(&data->img_db.background, &data->img_db.waves_fix, j * data->world.tile_w, i * data->world.tile_h + data->world.animated_tiles[count].draw.frame->height);
 				count++;
 			}
 			j++;
 		}
 		i++;
 	}
-	data->world.waves[count].end = true;
+	data->world.animated_tiles[count].end = true;
 	mlx_destroy_image(data->engine.mlx_ptr, img.img_ptr);
 }
 

@@ -6,13 +6,13 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/11 14:54:50 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/15 03:32:05 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/15 14:22:01 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../lib/game.h"
 
-void	init_draw(t_draw *draw, t_flipbook *flipbook, t_coor pos)
+void	init_draw(t_draw *draw, t_flipbook *flipbook, t_coor pos, char *name)
 {
 	draw->active_flipbook = flipbook;
 	draw->counter = 0;
@@ -22,34 +22,8 @@ void	init_draw(t_draw *draw, t_flipbook *flipbook, t_coor pos)
 	draw->pos = pos;
 	draw->need_redraw = false;
 	draw->dir = 1;
-}
-static void	null_img(t_data *data)
-{
-	int	i;
-
-	i = 0;
-	while (i < 10)
-	{
-		if (i < 10)
-			ft_init_img_clean(&data->img_db.hero_idle.img[i]);
-		if (i < 10)
-			ft_init_img_clean(&data->img_db.hero_jump.img[i]);
-		if (i < 8)
-			ft_init_img_clean(&data->img_db.hero_runshoot.img[i]);
-		if (i < 8)
-			ft_init_img_clean(&data->img_db.hero_run.img[i]);
-		if (i < 5)
-			ft_init_img_clean(&data->img_db.fire_bullet.img[i]);
-		if (i < 5)
-			ft_init_img_clean(&data->img_db.fire_muzzle.img[i]);
-		if (i < 4)
-			ft_init_img_clean(&data->img_db.hero_shoot.img[i]);
-		if (i < 4)
-			ft_init_img_clean(&data->img_db.hero_shoot.img[i]);
-		if (i < 4)
-			ft_init_img_clean(&data->img_db.waves.img[i]);
-		i++;
-	}
+	draw->name = name;
+	draw->rendered_last_frame = false;
 }
 
 static t_img	ft_new_img(t_data *data, char *path)
@@ -91,14 +65,11 @@ static void	init_mallocs(t_data *data)
 	data->img_db.waves.img = malloc(sizeof(t_img) * 4);
 	if (!data->img_db.hero_runshoot.img)
 		quit(data);
-	null_img(data);
 }
 
 static void init_ptr(t_data *data)
 {
-	data->img_db.contour.img_ptr = NULL;
-	data->img_db.background.img_ptr = NULL;
-	data->img_db.saved_background.img_ptr = NULL;
+	// a malloquer
 	data->world.map = NULL;
 	data->img_db.hero_idle.img = NULL;
 	data->img_db.hero_run.img = NULL;
@@ -106,12 +77,19 @@ static void init_ptr(t_data *data)
 	data->img_db.hero_shoot.img = NULL;
 	data->img_db.hero_runshoot.img = NULL;
 	data->img_db.waves.img = NULL;
-	data->world.waves = NULL;
+	data->world.animated_tiles = NULL;
+	data->img_db.fire_bullet.img = NULL;
+	data->img_db.fire_muzzle.img = NULL;
+
+	// les img_ptr
+
+	
 
 }
 
 void	init_values(t_data *data)
 {
+	data->stock = 200;
 	data->hero.locomotion.state = IDLE;
 	data->hero.locomotion.pos.x = 0;
 	data->hero.locomotion.pos.y = 0;
@@ -188,10 +166,17 @@ static void	init_img(t_data *data)
 	data->img_db.fire_bullet.img[3] = ft_new_img(data, "textures/Bullet/Bullet_003.xpm");
 	data->img_db.fire_bullet.img[4] = ft_new_img(data, "textures/Bullet/Bullet_004.xpm");
 
+	data->img_db.fire_muzzle.img[0] = ft_new_img(data, "textures/Bullet/Muzzle_000.xpm");
+	data->img_db.fire_muzzle.img[1] = ft_new_img(data, "textures/Bullet/Muzzle_001.xpm");
+	data->img_db.fire_muzzle.img[2] = ft_new_img(data, "textures/Bullet/Muzzle_002.xpm");
+	data->img_db.fire_muzzle.img[3] = ft_new_img(data, "textures/Bullet/Muzzle_003.xpm");
+	data->img_db.fire_muzzle.img[4] = ft_new_img(data, "textures/Bullet/Muzzle_004.xpm");
+
 	data->img_db.waves.img[0] = ft_new_img(data, "textures/Tiles/waves0.xpm");
 	data->img_db.waves.img[1] = ft_new_img(data, "textures/Tiles/waves1.xpm");
 	data->img_db.waves.img[2] = ft_new_img(data, "textures/Tiles/waves2.xpm");
 	data->img_db.waves.img[3] = ft_new_img(data, "textures/Tiles/waves3.xpm");
+	data->img_db.waves_fix = ft_new_img(data, "textures/Tiles/waves_fix.xpm");
 	
 	data->img_db.contour = ft_new_img(data, "textures/HUD/countour.xpm");
 
@@ -208,19 +193,26 @@ static void	init_img(t_data *data)
 	data->hero.jump = &data->img_db.hero_jump;
 	data->hero.shoot = &data->img_db.hero_shoot;
 	data->hero.runshoot = &data->img_db.hero_runshoot;
-	init_draw(&data->hero.draw, &data->img_db.hero_idle, (t_coor){0, 0});
+	init_draw(&data->hero.draw, &data->img_db.hero_idle, (t_coor){0, 0}, "hero");
 }
 
 
 void	init_bullets(t_data *data)
 {
 	int	i;
+	int	max;
 
 	i = 0;
-	while (i < 100)
+	max = data->stock;
+	while (i < max)
 	{
 		data->bullets[i].active = false;
-		init_draw(&data->bullets[i].draw, &data->img_db.fire_bullet, (t_coor){0, 0});
+		data->bullets[i].last_render = 0;
+		data->bullets[i].locomotion.state = RUN;
+		data->muzzles[i].repeat = 1;
+		data->muzzles[i].active = false;
+		init_draw(&data->bullets[i].draw, &data->img_db.fire_bullet, (t_coor){0, 0}, "bullet");
+		init_draw(&data->muzzles[i].draw, &data->img_db.fire_muzzle, (t_coor){0, 0}, "muzzle");
 		i++;
 	}
 }
@@ -234,6 +226,7 @@ static void	init_imgs_values(t_data *data)
 	data->img_db.hero_shoot.nb_img = 4;
 	data->img_db.hero_runshoot.nb_img = 8;
 	data->img_db.fire_bullet.nb_img = 5;
+	data->img_db.fire_muzzle.nb_img = 5;
 	data->img_db.waves.nb_img = 4;
 
 	//IMG/SEC
@@ -243,8 +236,24 @@ static void	init_imgs_values(t_data *data)
 	data->img_db.hero_run.img_per_sec = 10;
 	data->img_db.hero_shoot.img_per_sec = 15;
 	data->img_db.fire_bullet.img_per_sec = 10;
-	data->img_db.waves.img_per_sec = 10;
+	data->img_db.fire_muzzle.img_per_sec = 18;
+	data->img_db.waves.img_per_sec = 5;
 
+}
+
+static void	init_weapon(t_data *data, t_character *character, char *name)
+{
+	character->weapon.bullet_locomotion.pos.x = 0;
+	character->weapon.bullet_locomotion.pos.y = 0;
+	character->weapon.bullet_locomotion.velocity_y = 0;
+	character->weapon.bullet_locomotion.bounce = 18;
+	character->weapon.bullet_locomotion.ms = 10;
+	character->weapon.bullet_locomotion.dir = 0;
+	character->weapon.bullet_locomotion.gravity_scale = 0;
+	character->weapon.bullet_dmg = 10;
+	character->weapon.bullet_flipbook = &data->img_db.fire_bullet;
+	character->weapon.muzzle_flipbook = &data->img_db.fire_muzzle;
+	character->weapon.name = name;
 }
 
 void	init(t_data *data)
@@ -255,13 +264,5 @@ void	init(t_data *data)
 	init_values(data);
 	init_imgs_values(data);
 	init_bullets(data);
-	data->hero.weapon.bullet_locomotion.pos.x = 0;
-	data->hero.weapon.bullet_locomotion.pos.y = 0;
-	data->hero.weapon.bullet_locomotion.velocity_y = 0;
-	data->hero.weapon.bullet_locomotion.bounce = 18;
-	data->hero.weapon.bullet_locomotion.ms = 10;
-	data->hero.weapon.bullet_locomotion.dir = 0;
-	data->hero.weapon.bullet_locomotion.gravity_scale = 0;
-	data->hero.weapon.bullet_dmg = 10;
-	data->hero.weapon.bullet_flipbook = &data->img_db.fire_bullet;
+	init_weapon(data, &data->hero, "bullet_hero");
 }

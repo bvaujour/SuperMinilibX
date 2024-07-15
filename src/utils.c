@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/11 14:59:38 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/15 03:43:38 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/15 15:53:47 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,9 +47,12 @@ void	new_empty_img(t_data *data, t_img *image, int width, int height)
 	return ;
 }
 
-void		add_to_draw_list(t_data *data, t_draw *to_draw)
+void	add_to_draw_list(t_data *data, t_draw *to_draw)
 {
-	if (data->nb_to_draw < 150)
+	int max;
+
+	max = data->stock;
+	if (data->nb_to_draw < max)
 	{
 		to_draw->need_redraw = true;
 		data->to_draw[data->nb_to_draw] = to_draw;
@@ -57,11 +60,25 @@ void		add_to_draw_list(t_data *data, t_draw *to_draw)
 	}
 }
 
-void		add_to_erase_list(t_data *data, t_draw *to_erase)
+void	add_to_erase_list(t_data *data, t_draw *to_erase)
 {
-	if (data->nb_to_erase < 150)
+	int max;
+
+	max = data->stock;
+	if (data->nb_to_erase < max)
 	{
 		data->to_erase[data->nb_to_erase] = to_erase;
 		data->nb_to_erase++;
 	}
 }
+
+
+bool	is_in_screen(t_world *world, t_img *img, t_coor pos)
+{
+	if (pos.x + img->width < world->camera.x)
+		return (0);
+	else if (pos.x > world->camera.x + world->screen_width)
+		return (0);
+	return (1);
+}
+

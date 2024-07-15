@@ -6,44 +6,89 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/13 01:00:09 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/15 02:22:21 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/15 13:47:06 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../lib/game.h"
 
-void	character_fire(t_character *character, t_bullet *bullets)
+
+static bool	set_next_dispo_bullet(t_character *character, t_bullet *bullets, int i)
 {
-	int	i;
+	static int	last_bullet_index = 0;
+	int			index;
+
+	index = (last_bullet_index + i) % 100;
+	if (bullets[index].active == false)
+	{
+		bullets[index].active = true;
+		bullets[index].draw.active_flipbook = character->weapon.bullet_flipbook;
+		bullets[index].draw.frame = &character->weapon.bullet_flipbook->img[0];
+		bullets[index].draw.last_frame = &character->weapon.bullet_flipbook->img[0];
+		bullets[index].locomotion = character->weapon.bullet_locomotion;
+		bullets[index].dmg = character->weapon.bullet_dmg;
+		bullets[index].draw.name = character->weapon.name;
+		if (character->locomotion.dir > 0)
+		{
+			bullets[index].locomotion.pos.x = character->locomotion.pos.x + character->draw.frame->width;
+			bullets[index].locomotion.dir = 2;
+		}
+		else
+		{
+			bullets[index].locomotion.pos.x = character->locomotion.pos.x;
+			bullets[index].locomotion.dir = -2;
+		}
+		bullets[index].locomotion.pos.y = character->locomotion.pos.y + character->draw.frame->height / 2 - bullets[index].draw.frame->height / 2;
+		bullets[index].draw.last_pos = bullets[index].locomotion.pos;
+		bullets[index].draw.pos = bullets[index].locomotion.pos;
+		last_bullet_index = index;
+		return (true);
+	}
+	return (false);
+}
+
+static bool	set_next_dispo_muzzle(t_character *character, t_effect *muzzles, int i)
+{
+	static int	last_muzzle_index = 0;
+	int			index;
+
+	index = (last_muzzle_index + i) % 100;
+	if (muzzles[index].active == false)
+	{
+		muzzles[index].active = true;
+		muzzles[index].draw.active_flipbook = character->weapon.muzzle_flipbook;
+		muzzles[index].draw.frame = &character->weapon.muzzle_flipbook->img[0];
+		muzzles[index].draw.last_frame = &character->weapon.muzzle_flipbook->img[0];
+		if (character->locomotion.dir > 0)
+			muzzles[index].draw.pos.x = character->locomotion.pos.x + character->draw.frame->width;
+		else
+			muzzles[index].draw.pos.x = character->locomotion.pos.x;
+
+		muzzles[index].draw.pos.y = character->locomotion.pos.y + character->draw.frame->height / 2 - muzzles[index].draw.frame->height / 2;
+		
+		muzzles[index].draw.last_pos = muzzles[index].draw.pos;
+		last_muzzle_index = index;
+		return (true);
+	}
+	return (false);
+}
+void	character_fire(t_character *character, t_bullet *bullets, t_effect *muzzles)
+{
+	int			i;
+	bool		bullet_found;
+	bool		muzzle_found;
 
 	if (gettime() - character->weapon.last_attack < 1000 / character->weapon.att_sec)
 		return ;
 	i = 0;
-	while (i < 100)
+	bullet_found = false;
+	muzzle_found = false;
+	while (i < 100 && (!bullet_found || !muzzle_found))
 	{
-		if (bullets[i].active == false)
-		{
-			bullets[i].active = true;
-			bullets[i].draw.active_flipbook = character->weapon.bullet_flipbook;
-			bullets[i].draw.frame = &character->weapon.bullet_flipbook->img[0];
-			bullets[i].draw.last_frame = &character->weapon.bullet_flipbook->img[0];
-			bullets[i].locomotion = character->weapon.bullet_locomotion;
-			bullets[i].dmg = character->weapon.bullet_dmg;
-			if (character->locomotion.dir > 0)
-			{
-				bullets[i].locomotion.pos.x = character->locomotion.pos.x + character->draw.frame->width;
-				bullets[i].locomotion.dir = 2;
-			}
-			else
-			{
-				bullets[i].locomotion.pos.x = character->locomotion.pos.x;
-				bullets[i].locomotion.dir = -2;
-			}
-			bullets[i].locomotion.pos.y = character->locomotion.pos.y + character->draw.frame->height / 2;
-			bullets[i].draw.last_pos = bullets[i].locomotion.pos;
-			bullets[i].draw.pos = bullets[i].locomotion.pos;
-			break ;
-		}
+		if (!muzzle_found)
+			muzzle_found = set_next_dispo_muzzle(character, muzzles, i);
+		if (!bullet_found)
+			bullet_found = set_next_dispo_bullet(character, bullets, i);
 		i++;
 	}
 	character->weapon.last_attack = gettime();

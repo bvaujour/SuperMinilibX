@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/03 14:34:06 by vanitas           #+#    #+#             */
-/*   Updated: 2024/07/15 03:39:42 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/15 15:53:53 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,9 @@
 # include <X11/Xlib.h>
 # include <stdbool.h>
 #include <sys/time.h>
-
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
+#include <stdio.h>
 typedef enum	e_state
 {
 	IDLE,
@@ -70,6 +72,8 @@ typedef struct s_flipbook
 
 typedef struct	s_draw
 {
+	char		*name;
+	bool		rendered_last_frame;
 	t_flipbook	*active_flipbook;
 	t_img		*frame;
 	t_coor		pos;
@@ -87,16 +91,26 @@ typedef	struct	s_bullet
 	int				dmg;
 	int				range;
 	bool			active;
+	time_t			last_render;
 }				t_bullet;
+
+typedef	struct	s_effect
+{
+	t_draw			draw;
+	int				repeat;
+	bool			active;
+}				t_effect;
 
 typedef struct	s_weapon
 {
 	t_flipbook		*bullet_flipbook;
+	t_flipbook		*muzzle_flipbook;
 	t_locomotion	bullet_locomotion;;
 	int				bullet_dmg;
 	int				att_sec;
 	int				bullet_range;
 	time_t			last_attack;
+	char			*name;
 	
 }				t_weapon;
 
@@ -132,12 +146,13 @@ typedef struct	s_animate_tile
 {
 	bool	end;
 	t_draw	draw;
+	t_img	*fix_part;
 	t_coor	pos;
 }				t_animate_tile;
 
 typedef struct	s_world
 {
-	t_animate_tile	*waves;
+	t_animate_tile	*animated_tiles;
 	int				tile_w;
 	int				tile_h;
 	t_coor			camera;
@@ -161,6 +176,7 @@ typedef	struct	s_image_database
 	t_flipbook		fire_muzzle;
 	t_img			contour;
 	t_flipbook		waves;
+	t_img			waves_fix;
 	t_img			tile_HautG;
 	t_img			tile_HautD;
 	t_img			tile_Haut;
@@ -179,9 +195,11 @@ typedef struct	s_data
 	t_image_database	img_db;
 	t_world				world;
 	t_control			controls;
-	t_bullet			bullets[100];
-	t_draw				*to_draw[150];
-	t_draw				*to_erase[150];
+	t_bullet			bullets[200];
+	t_effect			muzzles[200];
+	t_draw				*to_draw[200];
+	t_draw				*to_erase[200];
+	int					stock;
 	int					nb_to_draw;
 	int					nb_to_erase;
 	int					fps;
@@ -207,11 +225,17 @@ void	update(t_data *data);
 void	init_values(t_data *data);
 void 	character_move(t_character *character, t_world *world, int distance);
 void	character_change_state(t_character *character, e_state new_state);
-void	character_fire(t_character *character, t_bullet *bullets);
+void	character_fire(t_character *character, t_bullet *bullets, t_effect *muzzles);
 void	character_sprint(t_character *character, float acceleration);
-void	init_draw(t_draw *draw, t_flipbook *flipbook, t_coor pos);
+void	init_draw(t_draw *draw, t_flipbook *flipbook, t_coor pos, char *name);
 void	add_to_draw_list(t_data *data, t_draw *draw);
 void	add_to_erase_list(t_data *data, t_draw *draw);
+bool	is_in_screen(t_world *world, t_img *img, t_coor pos);
+
+
+
+
+
 
 
 

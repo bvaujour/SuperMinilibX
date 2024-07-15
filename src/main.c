@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/03 14:33:25 by vanitas           #+#    #+#             */
-/*   Updated: 2024/07/15 03:38:04 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/15 15:06:07 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,30 +15,26 @@
 
 int		frame(t_data *data)
 {
-	static time_t last_update = 0;
+	static time_t last_update	= 0;
+	static time_t exec_time		= 0;
 
-	if (gettime() - last_update > 1000 / data->fps)
+	if (gettime() - last_update > 1000 / (data->fps + 5 * exec_time))
 	{
+		exec_time = gettime();
 		show_fps();
 		data->nb_to_draw = 0;
 		data->nb_to_erase = 0;
 		if (data->hero.is_attacking == true)
-			character_fire(&data->hero, data->bullets);
+			character_fire(&data->hero, data->bullets, data->muzzles);
 		if (data->hero.is_sprinting == true)
 			character_sprint(&data->hero, 0.1);
 		else
 			character_sprint(&data->hero, -0.1);
 
 		update(data);
-		if (data->hero.draw.need_redraw == true)
-		{
-			data->hero.draw.dir = data->hero.locomotion.dir;
-			data->hero.draw.pos = data->hero.locomotion.pos;
-			add_to_draw_list(data, &data->hero.draw);
-			add_to_erase_list(data, &data->hero.draw);
-		}
 		render(data);
 		last_update = gettime();
+		exec_time = gettime() - exec_time;
 	}
 	return (0);
 }
