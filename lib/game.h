@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/03 14:34:06 by vanitas           #+#    #+#             */
-/*   Updated: 2024/03/26 18:34:17 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/15 03:39:42 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,19 +24,199 @@
 # include <math.h>
 # include <X11/Xlib.h>
 # include <stdbool.h>
+#include <sys/time.h>
 
-typedef struct s_info
+typedef enum	e_state
 {
-	int		pos_x;
-	int		pos_y;
-	bool	is_jumping;
-	int     velocity_y;
-}				t_info;
-typedef struct s_data
+	IDLE,
+	RUN,
+	FALL,
+	DEAD
+}				e_state;
+
+typedef struct	s_control
 {
-	t_mlx		engine;
-	t_img		hero;
-	t_info		hero_info;
+	bool		left;
+	bool		right;
+}				t_control;
+
+typedef struct	s_coor
+{
+	int	x;
+	int	y;
+}				t_coor;
+
+typedef struct	s_locomotion
+{
+	t_coor		pos;
+	float		ms;
+	int			dir;
+	float		velocity_y;
+	float		gravity_scale;
+	float		bounce;
+	e_state		state;
+	t_coor		root;
+	int			double_jump;
+	int			max_double_jump;
+}				t_locomotion;
+
+
+typedef struct s_flipbook
+{
+	t_img		*img;
+	int			img_per_sec;
+	int			nb_img;
+}				t_flipbook;
+
+typedef struct	s_draw
+{
+	t_flipbook	*active_flipbook;
+	t_img		*frame;
+	t_coor		pos;
+	t_img		*last_frame;
+	t_coor		last_pos;
+	bool		need_redraw;
+	int			counter;
+	int			dir;
+}				t_draw;
+
+typedef	struct	s_bullet
+{
+	t_locomotion	locomotion;
+	t_draw			draw;
+	int				dmg;
+	int				range;
+	bool			active;
+}				t_bullet;
+
+typedef struct	s_weapon
+{
+	t_flipbook		*bullet_flipbook;
+	t_locomotion	bullet_locomotion;;
+	int				bullet_dmg;
+	int				att_sec;
+	int				bullet_range;
+	time_t			last_attack;
+	
+}				t_weapon;
+
+
+typedef struct	s_sprite
+{
+	bool			end;
+	int				dmg;
+	bool			active;
+	t_locomotion	locomotion;
+	t_draw			draw;
+}				t_sprite;
+
+
+typedef struct	s_character
+{
+	t_flipbook		*idle;
+	t_flipbook		*run;
+	t_flipbook		*death;
+	t_flipbook		*shoot;
+	t_flipbook		*jump;
+	t_flipbook		*runshoot;
+	t_draw			draw;
+	float			speed_scale;
+	t_locomotion	locomotion;
+
+	bool			is_attacking;
+	bool			is_sprinting;
+	t_weapon		weapon;
+}				t_character;
+
+typedef struct	s_animate_tile
+{
+	bool	end;
+	t_draw	draw;
+	t_coor	pos;
+}				t_animate_tile;
+
+typedef struct	s_world
+{
+	t_animate_tile	*waves;
+	int				tile_w;
+	int				tile_h;
+	t_coor			camera;
+	int				map_width;
+	int				map_height;
+	int				screen_width;
+	int				screen_height;
+	char			**map;
+}				t_world;
+
+
+typedef	struct	s_image_database
+{
+	t_flipbook		hero_idle;
+	t_flipbook		hero_run;
+	t_flipbook		hero_jump;
+	t_flipbook		hero_death;
+	t_flipbook		hero_shoot;
+	t_flipbook		hero_runshoot;
+	t_flipbook		fire_bullet;
+	t_flipbook		fire_muzzle;
+	t_img			contour;
+	t_flipbook		waves;
+	t_img			tile_HautG;
+	t_img			tile_HautD;
+	t_img			tile_Haut;
+	t_img			tile_Milieu;
+	t_img			tile_Bas;
+	t_img			background;
+	t_img			saved_background;
+
+}				t_image_database;
+
+
+typedef struct	s_data
+{
+	t_mlx				engine;
+	t_character			hero;
+	t_image_database	img_db;
+	t_world				world;
+	t_control			controls;
+	t_bullet			bullets[100];
+	t_draw				*to_draw[150];
+	t_draw				*to_erase[150];
+	int					nb_to_draw;
+	int					nb_to_erase;
+	int					fps;
 }				t_data;
+
+
+void	init(t_data *data);
+void	render(t_data *data);
+void	new_empty_img(t_data *data, t_img *image, int width, int height);
+void	quit(t_data *data);
+int		key_release(int keypress, t_data *data);
+int		key_press(int keypress, t_data *data);
+int		button_press(int button, int x, int y, t_data *data);
+int		button_release(int button, int x, int y, t_data *data);
+void	map_handle(t_data *data, char *path);
+time_t	gettime();
+void	show_fps();
+void	move_camera_x(t_data *data, int distance);
+void	set_pos_y(t_locomotion *locomotion, t_draw *draw, int new_pos_y);
+void	set_pos_x(t_locomotion *locomotion, t_draw *draw, int new_pos_x);
+void	add_position(t_locomotion *locomotion, t_draw *draw, int delta_x, int delta_y);
+void	update(t_data *data);
+void	init_values(t_data *data);
+void 	character_move(t_character *character, t_world *world, int distance);
+void	character_change_state(t_character *character, e_state new_state);
+void	character_fire(t_character *character, t_bullet *bullets);
+void	character_sprint(t_character *character, float acceleration);
+void	init_draw(t_draw *draw, t_flipbook *flipbook, t_coor pos);
+void	add_to_draw_list(t_data *data, t_draw *draw);
+void	add_to_erase_list(t_data *data, t_draw *draw);
+
+
+
+
+
+
 
 #endif

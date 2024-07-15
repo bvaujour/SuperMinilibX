@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_freetab.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: vanitas <vanitas@student.42.fr>            +#+  +:+       +#+        */
+/*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/17 19:13:47 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/01/09 17:34:06 by vanitas          ###   ########.fr       */
+/*   Updated: 2024/07/11 23:00:37 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@ void	ft_freetab(void **tab)
 	int	i;
 
 	i = -1;
+	if (!tab)
+		return ;
 	while (tab[++i])
 		free(tab[i]);
 	free(tab);

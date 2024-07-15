@@ -1,6 +1,6 @@
 /* XPM */
 static char * RunShoot (2)_xpm[] = {
-"142 139 2572 2",
+"142 139 2571 2",
 "  	c None",
 ". 	c #000000",
 "+ 	c #141413",
@@ -2572,7 +2572,10 @@ static char * RunShoot (2)_xpm[] = {
 "T}	c #50504D",
 "U}	c #9B9A94",
 "V}	c #CFCDC6",
-"W}	c #111110",
+"                                                                                                                                                                                                                                                                                            ",
+"                                                                                                                                                                                                                                                                                            ",
+"                                                                                                                                                                                                                                                                                            ",
+"                                                                                                                                                                                                                                                                                            ",
 "                                                                                                                                                                                                                                                                                            ",
 "                                                                                                                                                                                                                                                                                            ",
 "                                                                                                                                                                                                                                                                                            ",
@@ -2707,8 +2710,4 @@ static char * RunShoot (2)_xpm[] = {
 "                                                                                    F}G}N N N 4+H}.                                             I}R(Q&J}X!v(+.N N N N N N N K}.                                                                                                             ",
 "                                                                                      L}6$N N ~)M}                                                    N}L.<^/_[%N N N N N N O}.                                                                                                             ",
 "                                                                                      ; D_N P}#.                                                            c<Q}R}j=6$N N +.3[.                                                                                                             ",
-"                                                                                        a:S}8[                                                                    X,T}U}V}d@l}                                                                                                              ",
-"                                                                                          .                                                                             `(+@W}                                                                                                              ",
-"                                                                                                                                                                                                                                                                                            ",
-"                                                                                                                                                                                                                                                                                            ",
-"                                                                                                                                                                                                                                                                                            "};
+"                                                                                        a:S}8[                                                                    X,T}U}V}d@l}                                                                                                              "};

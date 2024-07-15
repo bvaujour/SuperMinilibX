@@ -6,7 +6,7 @@
 #    By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/11/03 14:28:02 by vanitas           #+#    #+#              #
-#    Updated: 2024/03/26 14:11:57 by bvaujour         ###   ########.fr        #
+#    Updated: 2024/07/14 18:09:37 by bvaujour         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ NAME		=	game
 
 NAME_B		=	game_bonus
  
-CC			=	cc
+CC			=	gcc
 
 FLAGS		=	-Wall -Wextra -Werror -g
 
@@ -44,7 +44,16 @@ H_FILES		=	./lib/game.h
 H_FILES_B	=	./lib/game_bonus.h
 
 C_FILE		=	main.c						\
-
+				init.c						\
+				utils.c						\
+				end.c						\
+				control.c					\
+				map.c						\
+				position.c					\
+				character_actions.c			\
+				updates.c					\
+				render.c					\
+	
 C_FILE_B	=	main.c						\
 
 SRC			=	$(addprefix $(SRC_DIR), $(C_FILE))
@@ -71,12 +80,12 @@ CURSIVE		=	\e[33;3m
 	
 all: $(NAME)
 
-$(NAME): $(MLX_LIB) $(LIBFT_LIB) $(OBJ) $(H_FILES) Makefile
-	@$(CC) $(OBJ) $(LIBFT_LIB) $(MLX_EX) -lm -o $(NAME)
+$(NAME): $(H_FILES) $(MLX_LIB) $(LIBFT_LIB) $(OBJ) Makefile
+	$(CC) $(OBJ) $(LIBFT_LIB) $(MLX_EX) -lm -o $(NAME)
 	@printf "$(GREEN)- Mandatory executable ready.\n$(RESET)"
 
 
-$(OBJ_DIR)%.o: $(SRC_DIR)%.c
+$(OBJ_DIR)%.o: $(SRC_DIR)%.c $(H_FILES)
 	@mkdir -p $(@D)
 	@$(CC) $(FLAGS) -c $< -o $@
 	@$(CC) $(FLAGS) -MM $< -MF $(OBJ_DIR)$*.d -MT $(OBJ_DIR)$*.o

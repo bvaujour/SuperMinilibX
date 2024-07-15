@@ -6,13 +6,13 @@
 #    By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/03/26 11:35:35 by bvaujour          #+#    #+#              #
-#    Updated: 2024/03/26 14:20:24 by bvaujour         ###   ########.fr        #
+#    Updated: 2024/07/11 17:05:38 by bvaujour         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME 		=	SuperMinilibX.a
 
-SRC			=	ft_power_on.c ft_get_pixel_img.c ft_set_image_pixel.c ft_draw_img_to_img_scaled.c ft_draw_img_to_img.c  ft_init_img_clean.c ft_new_img_xpm_scaled.c ft_new_img_xpm.c
+SRC			=	ft_power_on.c ft_get_pixel_img.c ft_set_image_pixel.c ft_draw_mirror_to_img.c ft_draw_img_to_img_scaled.c ft_draw_img_to_img.c  ft_init_img_clean.c ft_new_img_xpm_scaled.c ft_new_img_xpm.c 
 
 MLX_PATH	=	./mlx_linux/
 
