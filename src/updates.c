@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/13 11:23:58 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/15 15:07:10 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/17 20:56:24 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,13 +35,10 @@ static e_state	land(t_locomotion *locomotion, t_world *world, t_draw *draw)
 
 static e_state	gravity(t_locomotion *locomotion, t_world *world, t_draw *draw)
 {
-	if (locomotion->gravity_scale == 0)
-		return (locomotion->state);
 	locomotion->root.x = locomotion->pos.x + draw->frame->width / 2;
 	locomotion->root.y = locomotion->pos.y + draw->frame->height;
-	if (locomotion->root.y >= world->screen_height - 100)
-		return (DEAD);
-	if (locomotion->velocity_y > 0 || locomotion->root.y < 0 || locomotion->root.y >= world->screen_height - 100 || (locomotion->root.x > 0 && locomotion->root.x < world->map_width && world->map[locomotion->root.y / world->tile_h][locomotion->root.x / world->tile_w] == '0'))
+
+	if (locomotion->velocity_y > 0 || locomotion->root.y < 0 || collision(world, locomotion->root) == AIR || collision(world, locomotion->root) == OUT)
 	{
 		add_position(locomotion, draw, 0, locomotion->velocity_y * -2);
 		if (locomotion->velocity_y > -9.81)
@@ -80,18 +77,23 @@ static void	update_projectile(t_data *data, t_world *world, t_bullet *bullets)
 	{
 		if (bullets[i].active == true)
 		{
+			add_position(&bullets[i].locomotion, &bullets[i].draw, bullets[i].locomotion.ms * bullets[i].locomotion.dir, 0);
+			bullets[i].draw.pos = bullets[i].locomotion.pos;
+			bullets[i].draw.dir = bullets[i].locomotion.dir;
 			in_screen = is_in_screen(&data->world, bullets[i].draw.frame, bullets[i].draw.pos);
-			if (bullets[i].locomotion.pos.x > world->camera.x + world->screen_width + 500 || bullets[i].locomotion.pos.x < world->camera.x - 500)
+			if (bullets[i].draw.dir < 0)
+				bullets[i].locomotion.root.x = bullets[i].locomotion.pos.x;
+			else	
+				bullets[i].locomotion.root.x = bullets[i].locomotion.pos.x + bullets[i].draw.frame->width;
+			bullets[i].locomotion.root.y = bullets[i].locomotion.pos.y + bullets[i].draw.frame->height/ 2;
+			if (collision(&data->world, bullets[i].locomotion.root) != AIR || bullets[i].locomotion.pos.x > world->camera.x + world->screen_width + 500 || bullets[i].locomotion.pos.x < world->camera.x - 500 || bullets[i].locomotion.pos.x <= 0 || bullets[i].locomotion.pos.x >= data->world.map_width)
 			{
 				bullets[i].active = false;
 				add_to_erase_list(data, &bullets[i].draw);
 				continue ;
 			}
 			bullets[i].locomotion.state = gravity(&bullets[i].locomotion, world, &bullets[i].draw);
-			add_position(&bullets[i].locomotion, &bullets[i].draw, bullets[i].locomotion.ms * bullets[i].locomotion.dir, 0);
 			update_pose(&bullets[i].draw, 1);
-			bullets[i].draw.pos = bullets[i].locomotion.pos;
-			bullets[i].draw.dir = bullets[i].locomotion.dir;
 			if (gettime() - bullets[i].last_render < 10)
 			{
 				
@@ -201,15 +203,20 @@ void	update(t_data *data)
 {
 	int		distance;
 
+	update_character(data, &data->hero);
 	if (data->hero.locomotion.dir < -1 || data->hero.locomotion.dir > 1)
 	{
 		distance = data->hero.locomotion.dir * data->hero.locomotion.ms * data->hero.speed_scale;
 		move_camera_x(data, distance);
 	}
-	update_character(data, &data->hero);
-	update_projectile(data, &data->world, data->bullets);
+	data->world.camera.y = data->hero.locomotion.pos.y - data->world.screen_height / 2;
+	if (data->world.camera.y > data->world.map_height - data->world.screen_height)
+		data->world.camera.y = data->world.map_height - data->world.screen_height;
+	if (data->world.camera.y < 0)
+		data->world.camera.y = 0;
 	update_muzzles(data, data->muzzles);
 	update_tiles(data, data->world.animated_tiles);
+	update_projectile(data, &data->world, data->bullets);
 	if (data->hero.draw.need_redraw == true)
 	{
 		data->hero.draw.dir = data->hero.locomotion.dir;

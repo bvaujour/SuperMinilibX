@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/03 14:34:06 by vanitas           #+#    #+#             */
-/*   Updated: 2024/07/15 15:53:53 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/18 00:41:22 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,16 @@ typedef enum	e_state
 	FALL,
 	DEAD
 }				e_state;
+
+typedef enum	e_case
+{
+	WATER,
+	AIR,
+	TILE,
+	CHARACTER,
+	EXIT,
+	OUT
+}				e_case;
 
 typedef struct	s_control
 {
@@ -129,7 +139,7 @@ typedef struct	s_character
 {
 	t_flipbook		*idle;
 	t_flipbook		*run;
-	t_flipbook		*death;
+	// t_flipbook		*death;
 	t_flipbook		*shoot;
 	t_flipbook		*jump;
 	t_flipbook		*runshoot;
@@ -161,6 +171,8 @@ typedef struct	s_world
 	int				screen_width;
 	int				screen_height;
 	char			**map;
+	int				line_count;
+	int				line_len;
 }				t_world;
 
 
@@ -169,7 +181,7 @@ typedef	struct	s_image_database
 	t_flipbook		hero_idle;
 	t_flipbook		hero_run;
 	t_flipbook		hero_jump;
-	t_flipbook		hero_death;
+	// t_flipbook		hero_death;
 	t_flipbook		hero_shoot;
 	t_flipbook		hero_runshoot;
 	t_flipbook		fire_bullet;
@@ -177,6 +189,7 @@ typedef	struct	s_image_database
 	t_img			contour;
 	t_flipbook		waves;
 	t_img			waves_fix;
+	t_img			door;
 	t_img			tile_HautG;
 	t_img			tile_HautD;
 	t_img			tile_Haut;
@@ -187,6 +200,20 @@ typedef	struct	s_image_database
 
 }				t_image_database;
 
+typedef struct	s_paths
+{
+	char 	*path;
+	char 	*next_path;
+	char	*tile_hg;
+	char	*tile_h;
+	char	*tile_hd;
+	char	*tile_m;
+	char	*tile_b;
+	char	*door;
+	char	*background;
+	char	*sky;
+	char	*ground;
+}				t_paths;
 
 typedef struct	s_data
 {
@@ -203,34 +230,47 @@ typedef struct	s_data
 	int					nb_to_draw;
 	int					nb_to_erase;
 	int					fps;
+	t_paths				paths;
 }				t_data;
 
 
-void	init(t_data *data);
-void	render(t_data *data);
-void	new_empty_img(t_data *data, t_img *image, int width, int height);
-void	quit(t_data *data);
-int		key_release(int keypress, t_data *data);
-int		key_press(int keypress, t_data *data);
-int		button_press(int button, int x, int y, t_data *data);
-int		button_release(int button, int x, int y, t_data *data);
-void	map_handle(t_data *data, char *path);
-time_t	gettime();
-void	show_fps();
-void	move_camera_x(t_data *data, int distance);
-void	set_pos_y(t_locomotion *locomotion, t_draw *draw, int new_pos_y);
-void	set_pos_x(t_locomotion *locomotion, t_draw *draw, int new_pos_x);
-void	add_position(t_locomotion *locomotion, t_draw *draw, int delta_x, int delta_y);
-void	update(t_data *data);
-void	init_values(t_data *data);
-void 	character_move(t_character *character, t_world *world, int distance);
-void	character_change_state(t_character *character, e_state new_state);
-void	character_fire(t_character *character, t_bullet *bullets, t_effect *muzzles);
-void	character_sprint(t_character *character, float acceleration);
-void	init_draw(t_draw *draw, t_flipbook *flipbook, t_coor pos, char *name);
-void	add_to_draw_list(t_data *data, t_draw *draw);
-void	add_to_erase_list(t_data *data, t_draw *draw);
-bool	is_in_screen(t_world *world, t_img *img, t_coor pos);
+e_case		collision(t_world *world, t_coor pos);
+void		init(t_data *data);
+void		init_values(t_data *data);
+
+void		render(t_data *data);
+void		new_empty_img(t_data *data, t_img *image, int width, int height);
+void		quit(t_data *data);
+int			key_release(int keypress, t_data *data);
+int			key_press(int keypress, t_data *data);
+int			button_press(int button, int x, int y, t_data *data);
+int			button_release(int button, int x, int y, t_data *data);
+void		map_handle(t_data *data);
+time_t		gettime();
+void		show_fps();
+void		move_camera_x(t_data *data, int distance);
+void		set_pos_y(t_locomotion *locomotion, t_draw *draw, int new_pos_y);
+void		set_pos_x(t_locomotion *locomotion, t_draw *draw, int new_pos_x);
+void		add_position(t_locomotion *locomotion, t_draw *draw, int delta_x, int delta_y);
+void		update(t_data *data);
+void		init_values(t_data *data);
+void 		character_move(t_character *character, t_world *world, int distance);
+void		character_change_state(t_character *character, e_state new_state);
+void		character_fire(t_character *character, t_bullet *bullets, t_effect *muzzles);
+void		character_sprint(t_character *character, float acceleration);
+void		init_draw(t_draw *draw, t_flipbook *flipbook, t_coor pos, char *name);
+void		add_to_draw_list(t_data *data, t_draw *draw);
+void		add_to_erase_list(t_data *data, t_draw *draw);
+bool		is_in_screen(t_world *world, t_img *img, t_coor pos);
+void		free_reusable_data(t_data *data);
+void		quit_error(t_data *data, const char *str);
+int			secure_open(t_data *data, char *path);
+void		secure_close(t_data *data, int fd);
+t_img		ft_new_img(t_data *data, char *path);
+
+
+
+
 
 
 

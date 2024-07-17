@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/03 14:33:25 by vanitas           #+#    #+#             */
-/*   Updated: 2024/07/15 15:06:07 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/18 00:47:35 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ int		frame(t_data *data)
 		if (data->hero.is_attacking == true)
 			character_fire(&data->hero, data->bullets, data->muzzles);
 		if (data->hero.is_sprinting == true)
-			character_sprint(&data->hero, 0.1);
+			character_sprint(&data->hero, 0.05);
 		else
 			character_sprint(&data->hero, -0.1);
 
@@ -35,6 +35,12 @@ int		frame(t_data *data)
 		render(data);
 		last_update = gettime();
 		exec_time = gettime() - exec_time;
+		if (collision(&data->world, data->hero.locomotion.root) == EXIT)
+		{
+			free_reusable_data(data);
+			init_values(data);
+			map_handle(data);
+		}
 	}
 	return (0);
 }
@@ -54,15 +60,17 @@ int	main(int ac, char **av)
 	data.engine.mlx_ptr = mlx_init();
 	if (!data.engine.mlx_ptr)
 		return (dprintf(2, "ft_power_on: error engine_init\n"), 1);
+	mlx_do_key_autorepeatoff(data.engine.mlx_ptr);
 	mlx_get_screen_size(data.engine.mlx_ptr, &data.engine.screen_w, &data.engine.screen_h);
 	data.world.screen_width = data.engine.screen_w;
 	data.world.screen_height = data.engine.screen_h;
 	data.engine.mlx_win = mlx_new_window(data.engine.mlx_ptr, data.engine.screen_w, data.engine.screen_h, "engine_engine");
 	if (!data.engine.mlx_win)
 		return (dprintf(2, "ft_power_on: error engine_win\n"), 2);
+	data.paths.next_path = NULL;
 	init(&data);
-	mlx_do_key_autorepeatoff(data.engine.mlx_ptr);
-	map_handle(&data, av[1]);
+	data.paths.next_path = ft_strdup(av[1]);
+	map_handle(&data);
 	mlx_hook(data.engine.mlx_win, 4, 1L<<2, button_press, &data);
 	mlx_hook(data.engine.mlx_win, 5, 1L<<3, button_release, &data);
 	mlx_hook(data.engine.mlx_win, 2, 1L<<0, key_press, &data);

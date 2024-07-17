@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/12 15:51:38 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/15 02:21:37 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/17 10:12:49 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,9 +44,9 @@ void	move_camera_x(t_data *data, int distance)
 
 	centre_gauche = data->engine.screen_w / 2 - 2 * data->hero.draw.frame->width;
 	centre_droit = data->engine.screen_w / 2 + data->hero.draw.frame->width;
-	if (data->hero.locomotion.dir < -1 && data->hero.locomotion.pos.x - data->world.camera.x < centre_gauche && data->world.camera.x + distance > 0)
+	if (data->hero.locomotion.dir < -1 && data->hero.locomotion.pos.x - data->world.camera.x < centre_gauche && data->world.camera.x + distance >= 0)
 		data->world.camera.x += distance;
-	else if (data->hero.locomotion.dir > 1 && data->hero.locomotion.pos.x - data->world.camera.x > centre_droit && data->world.camera.x + data->engine.screen_w + distance < data->world.map_width)
+	else if (data->hero.locomotion.dir > 1 && data->hero.locomotion.pos.x - data->world.camera.x > centre_droit && data->world.camera.x + data->engine.screen_w + distance <= data->world.map_width)
 		data->world.camera.x += distance;
 }
 

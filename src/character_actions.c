@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/13 01:00:09 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/15 13:47:06 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/17 17:16:01 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,14 +123,15 @@ void	character_change_state(t_character *character, e_state new_state)
 
 void character_move(t_character *character, t_world *world, int distance)
 {
+	t_coor	next_pos;
 
 	if (character->locomotion.dir >= -1 && character->locomotion.dir <= 1)
 		return ;
 	character->locomotion.root.x = character->locomotion.pos.x + character->draw.frame->width / 2;
 	character->locomotion.root.y = character->locomotion.pos.y + character->draw.frame->height - 20;
-	if (character->locomotion.pos.x + character->draw.frame->width + distance >= world->map_width || character->locomotion.pos.x + distance < 0)
-		return ;
-	if (character->locomotion.root.y >= 0 &&  character->locomotion.root.y < world->screen_height && world->map[character->locomotion.root.y / world->tile_h][(character->locomotion.root.x + distance) / world->tile_w] != '0')
+	next_pos.x = character->locomotion.root.x + distance;
+	next_pos.y = character->locomotion.root.y;
+	if (collision(world, next_pos) == TILE || collision(world, next_pos) == WATER || collision(world, next_pos) == OUT)
 		return ;
 	add_position(&character->locomotion, &character->draw, distance, 0);
 }

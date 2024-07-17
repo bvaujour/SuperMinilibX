@@ -6,12 +6,47 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/11 14:54:50 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/15 14:22:01 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/18 00:38:05 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../lib/game.h"
 
+
+static void	null_flipbook(t_flipbook *flipbook)
+{
+	int	i;
+
+	i = 0;
+	while (i < flipbook->nb_img)
+	{
+		flipbook->img[i].img_ptr = NULL;
+		i++;
+	}
+}
+static void	init_img_ptr(t_data *data)
+{
+	data->img_db.background.img_ptr = NULL;
+	data->img_db.door.img_ptr = NULL;
+	data->img_db.contour.img_ptr = NULL;
+	data->img_db.saved_background.img_ptr = NULL;
+	data->img_db.waves_fix.img_ptr = NULL;
+	data->img_db.tile_Bas.img_ptr = NULL;
+	data->img_db.tile_Haut.img_ptr = NULL;
+	data->img_db.tile_Milieu.img_ptr = NULL;
+	data->img_db.tile_HautD.img_ptr = NULL;
+	data->img_db.tile_HautG.img_ptr = NULL;
+	null_flipbook(&data->img_db.fire_bullet);
+	null_flipbook(&data->img_db.fire_muzzle);
+	null_flipbook(&data->img_db.hero_idle);
+	null_flipbook(&data->img_db.hero_run);
+	null_flipbook(&data->img_db.hero_jump);
+	null_flipbook(&data->img_db.hero_shoot);
+	null_flipbook(&data->img_db.hero_runshoot);
+	null_flipbook(&data->img_db.hero_runshoot);
+	null_flipbook(&data->img_db.waves);
+	// null_flipbook(&data->img_db.hero_death);
+}
 void	init_draw(t_draw *draw, t_flipbook *flipbook, t_coor pos, char *name)
 {
 	draw->active_flipbook = flipbook;
@@ -26,7 +61,7 @@ void	init_draw(t_draw *draw, t_flipbook *flipbook, t_coor pos, char *name)
 	draw->rendered_last_frame = false;
 }
 
-static t_img	ft_new_img(t_data *data, char *path)
+t_img	ft_new_img(t_data *data, char *path)
 {
 	t_img	new;
 
@@ -34,7 +69,7 @@ static t_img	ft_new_img(t_data *data, char *path)
 	new.img_ptr = mlx_xpm_file_to_image(data->engine.mlx_ptr, path,
 			&new.width, &new.height);
 	if (!new.img_ptr)
-		quit(data);
+		quit_error(data, "ft_new_img: mlx_xpm_file_to_image");
 	new.addr = (int *)mlx_get_data_addr(new.img_ptr,
 			&new.bits_per_pixel, &new.line_length, &new.endian);
 	return (new);
@@ -43,28 +78,28 @@ static void	init_mallocs(t_data *data)
 {
 	data->img_db.hero_idle.img = malloc(sizeof(t_img) * 10);
 	if (!data->img_db.hero_idle.img)
-		quit(data);
+		quit_error(data, "init_mallocs: Malloc");
 	data->img_db.hero_jump.img = malloc(sizeof(t_img) * 10);
 	if (!data->img_db.hero_jump.img)
-		quit(data);
+		quit_error(data, "init_mallocs: Malloc");
 	data->img_db.hero_run.img = malloc(sizeof(t_img) * 8);
 	if (!data->img_db.hero_run.img)
-		quit(data);
+		quit_error(data, "init_mallocs: Malloc");
 	data->img_db.hero_shoot.img = malloc(sizeof(t_img) * 4);
 	if (!data->img_db.hero_shoot.img)
-		quit(data);
+		quit_error(data, "init_mallocs: Malloc");
 	data->img_db.fire_muzzle.img = malloc(sizeof(t_img) * 5);
 	if (!data->img_db.fire_muzzle.img)
-		quit(data);
+		quit_error(data, "init_mallocs: Malloc");
 	data->img_db.fire_bullet.img = malloc(sizeof(t_img) * 5);
 	if (!data->img_db.fire_bullet.img)
-		quit(data);
+		quit_error(data, "init_mallocs: Malloc");
 	data->img_db.hero_runshoot.img = malloc(sizeof(t_img) * 8);
 	if (!data->img_db.hero_runshoot.img)
-		quit(data);
+		quit_error(data, "init_mallocs: Malloc");
 	data->img_db.waves.img = malloc(sizeof(t_img) * 4);
 	if (!data->img_db.hero_runshoot.img)
-		quit(data);
+		quit_error(data, "init_mallocs: Malloc");
 }
 
 static void init_ptr(t_data *data)
@@ -73,13 +108,24 @@ static void init_ptr(t_data *data)
 	data->world.map = NULL;
 	data->img_db.hero_idle.img = NULL;
 	data->img_db.hero_run.img = NULL;
-	data->img_db.hero_death.img = NULL;
+	// data->img_db.hero_death.img = NULL;
 	data->img_db.hero_shoot.img = NULL;
 	data->img_db.hero_runshoot.img = NULL;
 	data->img_db.waves.img = NULL;
 	data->world.animated_tiles = NULL;
 	data->img_db.fire_bullet.img = NULL;
 	data->img_db.fire_muzzle.img = NULL;
+	data->paths.next_path = NULL;
+	data->paths.path = NULL;
+	data->paths.tile_b = NULL;
+	data->paths.tile_h = NULL;
+	data->paths.tile_hd = NULL;
+	data->paths.tile_hg = NULL;
+	data->paths.tile_m = NULL;
+	data->paths.door = NULL;
+	data->paths.background = NULL;
+	data->paths.sky = NULL;
+	data->paths.ground = NULL;
 
 	// les img_ptr
 
@@ -110,10 +156,11 @@ void	init_values(t_data *data)
 	data->hero.speed_scale = 1;
 	data->world.camera.x = 0;
 	data->world.camera.y = 0;
-	data->world.tile_w = data->img_db.tile_Milieu.width;
-	data->world.tile_h = data->img_db.tile_Milieu.height;
+	data->world.line_count = 0;
+	data->world.line_len = 0;
 	data->controls.right = false;
 	data->controls.left = false;
+	
 }
 
 static void	init_img(t_data *data)
@@ -181,15 +228,9 @@ static void	init_img(t_data *data)
 	data->img_db.contour = ft_new_img(data, "textures/HUD/countour.xpm");
 
 
-	data->img_db.tile_Bas = ft_new_img(data, "textures/Tiles/TileBas.xpm");
-	data->img_db.tile_Haut = ft_new_img(data, "textures/Tiles/TileHaut.xpm");
-	data->img_db.tile_HautG = ft_new_img(data, "textures/Tiles/TitleHautGauche.xpm");
-	data->img_db.tile_HautD = ft_new_img(data, "textures/Tiles/TileHautDroit.xpm");
-	data->img_db.tile_Milieu = ft_new_img(data, "textures/Tiles/TileMilieu.xpm");
-
 	data->hero.idle = &data->img_db.hero_idle;
 	data->hero.run = &data->img_db.hero_run;
-	data->hero.death = &data->img_db.hero_death;
+	// data->hero.death = &data->img_db.hero_death;
 	data->hero.jump = &data->img_db.hero_jump;
 	data->hero.shoot = &data->img_db.hero_shoot;
 	data->hero.runshoot = &data->img_db.hero_runshoot;
@@ -256,13 +297,15 @@ static void	init_weapon(t_data *data, t_character *character, char *name)
 	character->weapon.name = name;
 }
 
+
 void	init(t_data *data)
 {
 	init_ptr(data);
 	init_mallocs(data);
+	init_imgs_values(data);
+	init_img_ptr(data);
 	init_img(data);
 	init_values(data);
-	init_imgs_values(data);
 	init_bullets(data);
 	init_weapon(data, &data->hero, "bullet_hero");
 }

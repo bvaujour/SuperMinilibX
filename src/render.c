@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/14 17:43:45 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/15 13:55:06 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/17 14:56:17 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ void	render(t_data *data)
 {
 	restore(data->to_erase, data->nb_to_erase, &data->img_db.background, &data->img_db.saved_background);
 	redraw(data->to_draw, data->nb_to_draw, &data->img_db.background);
-	mlx_put_image_to_window(data->engine.mlx_ptr, data->engine.mlx_win, data->img_db.background.img_ptr, -data->world.camera.x, 0);
+	mlx_put_image_to_window(data->engine.mlx_ptr, data->engine.mlx_win, data->img_db.background.img_ptr, -data->world.camera.x, -data->world.camera.y);
 	mlx_put_image_to_window(data->engine.mlx_ptr, data->engine.mlx_win, data->img_db.contour.img_ptr, 20, data->world.screen_height - data->img_db.contour.height - 100);
 
 }

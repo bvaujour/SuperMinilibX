@@ -6,7 +6,7 @@
 /*   By: bvaujour <bvaujour@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/11 16:48:29 by bvaujour          #+#    #+#             */
-/*   Updated: 2024/07/13 11:54:45 by bvaujour         ###   ########.fr       */
+/*   Updated: 2024/07/17 17:21:45 by bvaujour         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void	ft_draw_mirror_to_img(t_img *dst, t_img *src, int x, int y)
 		tmp_x = x;
 		while (i >= 0)
 		{
-			if (x + i > 0 && y + j > 0 && x + i < dst->width
+			if (tmp_x + i >= 0 && y + j >= 0 && tmp_x + i < dst->width
 				&& y + j < dst->height)
 			{
 				ft_set_image_pixel(dst, tmp_x, y + j, ft_get_pixel_img(src, i, j));
